@@ -2,6 +2,7 @@
 
 import numpy as np
 import os
+import copy
 
 # global variable definitions
 h = 6.626070040e-34 # j * s
@@ -128,6 +129,15 @@ class xsf_info(object) :
         c_unit = self.lat_vec[2] / np.linalg.norm(self.lat_vec[2])
         self.vol = np.dot(np.cross(self.lat_vec[0], self.lat_vec[1]), (self.c_max - self.c_min) * c_unit)
         return self.vol
+
+    def copy(self, xsf_new) :
+        """copy attributes from xsf_new to this xsf"""
+        self.at_coord = copy.copy(xsf_new.at_coord)
+        self.ind_rem_at = copy.copy(xsf_new.ind_rem_at)
+        self.el_list = copy.copy(xsf_new.el_list)
+        self.num_each_el = copy.copy(xsf_new.num_each_el)
+        self.num_at = copy.copy(xsf_new.num_at)
+
 
 class qe_out_info(object) :
     """class for representing a QE output file

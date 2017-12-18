@@ -28,34 +28,34 @@ class mc :
 	"""
 
 	def __init__(self, T, T2, pace, xsf) :
-		self.T = T                # System temperature # RBW: change to T_move
-		self.T_exc = T2           # Temperature for exchange atoms # RBW : change to T_exc
-		self.pace = pace          # Max displacement # RBW : change to curr_max_disp
-		self.max_pace = 0.2       # Max displacement limit # RBW : change to max_disp
-		self.nvt_run_cnt = 1      # Canonical ensemble running count
-		self.uvt_run_cnt = 1      # Grand canonical ensemble running count
-		self.check_acc = 25       # Max displacement update rate
-		self.acc = 0              # Number of acceptance
-		self.mv_num = 0           # Number of atoms to move
-		self.mv_ind = 0           # Indices of atoms to move
-		self.mv_vec = 0           # Displacement of atoms
-		self.old_coord = 0        # Coordinates in last iteration
-		self.new_coord = 0        # Coordinates in this iteration
-		self.ad_vec = 0           # Coordinate of the added atom
+		self.T = T                  # System temperature # RBW: change to T_move
+		self.T_exc = T2             # Temperature for exchange atoms # RBW : change to T_exc
+		self.pace = pace            # Max displacement # RBW : change to curr_max_disp
+		self.max_pace = 0.2         # Max displacement limit # RBW : change to max_disp
+		self.nvt_run_cnt = 1        # Canonical ensemble running count
+		self.uvt_run_cnt = 1        # Grand canonical ensemble running count
+		self.check_acc = 25         # Max displacement update rate
+		self.acc = 0                # Number of acceptance
+		self.mv_num = 0             # Number of atoms to move
+		self.mv_ind = 0             # Indices of atoms to move
+		self.mv_vec = 0             # Displacement of atoms
+		self.old_coord = 0          # Coordinates in last iteration
+		self.new_coord = 0          # Coordinates in this iteration
+		self.ad_vec = 0             # Coordinate of the added atom
 		self.en_curr = 100          # Energy in this (previous) iteration
 		self.g_curr = 100           # Free energy in this (previous) iteration
 		self.en_low = 100           # Lowest energy
 		self.g_low = 100            # Lowest free energy?
-		self.coord_opt = 0        # Coordinates associated with the lowest energy
+		self.coord_opt = 0          # Coordinates associated with the lowest energy
 		self.xsf_opt_at_coord = copy.copy(xsf.at_coord)
 		self.xsf_opt_ind_rem_at = copy.copy(xsf.ind_rem_at)
 		self.xsf_opt_el_list = copy.copy(xsf.el_list)
 		self.xsf_opt_num_each_el = copy.copy(xsf.num_each_el)
 		self.xsf_opt_num_at = xsf.num_at
-		self.uvt_rm_ind = 0       # Grand canonical ensemble, index of the atom to be removed
-		self.uvt_ad_ind = 0       # Grand canonical ensemble, index of the atom to be added
-		self.uvt_act = 0          # Grand canonical ensemble actions, 0: move atom, 1: add atom, -1: del atom
-		self.uvt_exc_el = 0       # Grand canonical ensemble, index of the element to be exchanged
+		self.uvt_rm_ind = 0         # Grand canonical ensemble, index of the atom to be removed
+		self.uvt_ad_ind = 0         # Grand canonical ensemble, index of the atom to be added
+		self.uvt_act = 0            # Grand canonical ensemble actions, 0: move atom, 1: add atom, -1: del atom
+		self.uvt_exc_el = 0         # Grand canonical ensemble, index of the element to be exchanged
 
 	# determine atoms to mv and step 
 	def rand_mv(self, xsf) : # xsf is of xsf_info class
@@ -108,11 +108,11 @@ class mc :
 		elif cndt < 0.75 : # add one atom
 			dis = 0
 			trial = 0
-                        self.uvt_act = 1
-                        self.uvt_ad_ind = xsf.num_at                            # creat the index of atom to be added
-                        self.uvt_exc_el = np.random.randint(el.num_el)          # find the element index
-                        el_to_ad = el.ind_to_el_dict[self.uvt_exc_el]['el_sym'] # find element symbol
-			while dis < 1.5 : # control atom distance
+			self.uvt_act = 1
+			self.uvt_ad_ind = xsf.num_at                            # creat the index of atom to be added
+			self.uvt_exc_el = np.random.randint(el.num_el)          # find the element index
+			el_to_ad = el.ind_to_el_dict[self.uvt_exc_el]['el_sym'] # find element symbol
+			while dis < 1.5 or dis > 2.5 : # control atom distance
 				self.ad_vec = np.zeros(3)
 				self.ad_vec += np.random.rand() * xsf.lat_vec[0] 
 				self.ad_vec += np.random.rand() * xsf.lat_vec[1]
@@ -148,7 +148,7 @@ class mc :
 		elif max_dis > 3.5 :                                              ##### avoid np get in touch, parameter 5 need to be change to variable
 			cndt = np.random.rand() * 0.75
 			if cndt >= 0.5 :
-				cndt += 0.25
+				cndt += 0.45
 		else :
 			cndt = np.random.rand()
 		if cndt < 0.50 :    # move atoms
@@ -158,7 +158,7 @@ class mc :
 			for i, ind in enumerate(self.mv_ind) :
 				xsf.at_coord[ind, :] += self.mv_vec[i, :]
 			return xsf.at_coord, xsf.ind_rem_at, xsf.el_list, xsf.num_each_el, xsf.num_at
-		elif cndt < 0.75 : # add one atom
+		elif cndt < 0.95 : # add one atom
 			dis = 0
 			while dis < 1.5 or dis > 2.5 : # control atom distance
 				self.uvt_act = 1
